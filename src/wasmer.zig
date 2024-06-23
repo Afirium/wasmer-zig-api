@@ -52,6 +52,12 @@ pub fn detectWasmerLibDir(allocator: std.mem.Allocator) !?[]const u8 {
     return try allocator.dupe(u8, std.mem.trimRight(u8, stdout_res, "\r\n"));
 }
 
+pub fn setupTracing(verbosity_level: usize, use_colors: usize) void {
+    wasmer_setup_tracing(@as(c_int, @intCast(verbosity_level)), @as(c_int, @intCast(use_colors)));
+}
+
+pub extern "c" fn wasmer_setup_tracing(c_int, c_int) void;
+
 pub fn lastError(allocator: std.mem.Allocator) ![:0]u8 {
     const buf_len = @as(usize, @intCast(wasmer_last_error_length()));
     const buf = try allocator.alloc(u8, buf_len);
