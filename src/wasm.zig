@@ -340,6 +340,21 @@ pub const Instance = opaque {
         return instance orelse Error.InstanceInit;
     }
 
+    pub fn initFromImports(store: *Store, module: *Module, imports: *ExternVec) !*Instance {
+        var trap: ?*Trap = null;
+
+        const instance = wasm_instance_new(store, module, imports, &trap);
+
+        if (trap) |t| {
+            defer t.deinit();
+            // TODO handle trap message
+            log.err("code unexpectedly trapped", .{});
+            return Error.InstanceInit;
+        }
+
+        return instance orelse Error.InstanceInit;
+    }
+
     /// Returns an export func by its name if found
     /// Asserts the export is of type `Func`
     /// The returned `Func` is a copy and must be freed by the caller
