@@ -1,6 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 pub const wasm = @import("./wasm.zig");
+pub const wasi = @import("./wasi.zig");
 
 // Re-exports
 pub const ByteVec = wasm.ByteVec;
@@ -10,6 +11,10 @@ pub const Module = wasm.Module;
 pub const Instance = wasm.Instance;
 pub const Extern = wasm.Extern;
 pub const Func = wasm.Func;
+pub const Memory = wasm.Memory;
+pub const MemoryType = wasm.MemoryType;
+pub const Limits = wasm.Limits;
+pub const WasiConfig = wasi.WasiConfig;
 
 const OS_PATH_MAX: usize = switch (builtin.os.tag) {
     .windows => std.os.windows.MAX_PATH,

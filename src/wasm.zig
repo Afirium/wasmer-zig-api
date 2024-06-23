@@ -73,14 +73,6 @@ pub const Module = opaque {
         var byte_vec = ByteVec.initWithCapacity(bytes.len);
         defer byte_vec.deinit();
 
-        // var i: usize = 0;
-        // var ptr = byte_vec.data;
-        // while (i < bytes.len) : (i += 1) {
-        //     ptr.* = bytes[i];
-        //     ptr += 1;
-        // }
-        // TODO: remove it
-
         var ptr = byte_vec.data;
         var i: usize = 0;
         while (i < bytes.len) : (i += 1) {
@@ -109,7 +101,7 @@ pub const Module = opaque {
 fn cb(params: ?*const Valtype, results: ?*Valtype) callconv(.C) ?*Trap {
     _ = params;
     _ = results;
-    const func = @as(fn () void, @ptrFromInt(CALLBACK));
+    const func = @as(*const fn () void, @ptrFromInt(CALLBACK));
     func();
     return null;
 }
@@ -135,13 +127,16 @@ pub const Func = opaque {
         const cb_meta = @typeInfo(@TypeOf(callback));
         switch (cb_meta) {
             .Fn => {
-                if (cb_meta.Fn.args.len > 0 or cb_meta.Fn.return_type.? != void) {
+                if (cb_meta.Fn.params.len > 0 or cb_meta.Fn.return_type.? != void) {
                     @compileError("only callbacks with no input args and no results are currently supported");
                 }
             },
             else => @compileError("only functions can be used as callbacks into Wasm"),
         }
-        CALLBACK = @intFromPtr(callback);
+
+        const func_ptr: *const fn () void = @ptrCast(&callback);
+
+        CALLBACK = @intFromPtr(func_ptr);
 
         var args = ValtypeVec.empty();
         var results = ValtypeVec.empty();
@@ -296,7 +291,7 @@ pub const Func = opaque {
         wasm_func_delete(self);
     }
 
-    /// Returns tue if the given `kind` of `Valkind` can coerce to type `T`
+    /// Returns true if the given `kind` of `Valkind` can coerce to type `T`
     pub fn matchesKind(comptime T: type, kind: Valkind) bool {
         return switch (T) {
             i32, u32 => kind == .i32,
@@ -309,7 +304,7 @@ pub const Func = opaque {
         };
     }
 
-    extern "c" fn wasm_func_new(*Store, ?*anyopaque, Callback) ?*Func;
+    extern "c" fn wasm_func_new(*Store, ?*anyopaque, *const Callback) ?*Func;
     extern "c" fn wasm_func_delete(*Func) void;
     extern "c" fn wasm_func_as_extern(*Func) ?*Extern;
     extern "c" fn wasm_func_copy(*const Func) ?*Func;
@@ -326,13 +321,6 @@ pub const Instance = opaque {
         var trap: ?*Trap = null;
         var imports = ExternVec.initWithCapacity(import.len);
         defer imports.deinit();
-
-        // var ptr = imports.data;
-        // for (import) |func| {
-        //     ptr.* = func.asExtern();
-        //     ptr += 1;
-        // }
-        // TODO: remove it
 
         var ptr = imports.data;
         var i: usize = 0;
@@ -794,78 +782,6 @@ pub const ValVec = extern struct {
 // Func
 pub extern "c" fn wasm_functype_new(args: *ValtypeVec, results: *ValtypeVec) ?*anyopaque;
 pub extern "c" fn wasm_functype_delete(functype: *anyopaque) void;
-
-pub const WasiConfig = opaque {
-    /// Options to inherit when inherriting configs
-    /// By default all is `true` as you often want to
-    /// inherit everything rather than something specifically.
-    const InheritOptions = struct {
-        argv: bool = true,
-        env: bool = true,
-        std_in: bool = true,
-        std_out: bool = true,
-        std_err: bool = true,
-    };
-
-    pub fn init() !*WasiConfig {
-        return wasi_config_new() orelse error.ConfigInit;
-    }
-
-    pub fn deinit(self: *WasiConfig) void {
-        wasi_config_delete(self);
-    }
-
-    /// Allows to inherit the native environment into the current config.
-    /// Inherits everything by default.
-    pub fn inherit(self: *WasiConfig, options: InheritOptions) void {
-        if (options.argv) self.inheritArgv();
-        if (options.env) self.inheritEnv();
-        if (options.std_in) self.inheritStdIn();
-        if (options.std_out) self.inheritStdOut();
-        if (options.std_err) self.inheritStdErr();
-    }
-
-    pub fn inheritArgv(self: *WasiConfig) void {
-        wasi_config_inherit_argv(self);
-    }
-
-    pub fn inheritEnv(self: *WasiConfig) void {
-        wasi_config_inherit_env(self);
-    }
-
-    pub fn inheritStdIn(self: *WasiConfig) void {
-        wasi_config_inherit_stdin(self);
-    }
-
-    pub fn inheritStdOut(self: *WasiConfig) void {
-        wasi_config_inherit_stdout(self);
-    }
-
-    pub fn inheritStdErr(self: *WasiConfig) void {
-        wasi_config_inherit_stderr(self);
-    }
-
-    extern "c" fn wasi_config_new() ?*WasiConfig;
-    extern "c" fn wasi_config_delete(?*WasiConfig) void;
-    extern "c" fn wasi_config_inherit_argv(?*WasiConfig) void;
-    extern "c" fn wasi_config_inherit_env(?*WasiConfig) void;
-    extern "c" fn wasi_config_inherit_stdin(?*WasiConfig) void;
-    extern "c" fn wasi_config_inherit_stdout(?*WasiConfig) void;
-    extern "c" fn wasi_config_inherit_stderr(?*WasiConfig) void;
-};
-
-pub const WasiInstance = opaque {
-    pub fn init(store: *Store, name: [*:0]const u8, config: ?*WasiConfig, trap: *?*Trap) !*WasiInstance {
-        return wasi_instance_new(store, name, config, trap) orelse error.InstanceInit;
-    }
-
-    pub fn deinit(self: *WasiInstance) void {
-        wasm_instance_delete(self);
-    }
-
-    extern "c" fn wasi_instance_new(?*Store, [*:0]const u8, ?*WasiConfig, *?*Trap) ?*WasiInstance;
-    extern "c" fn wasm_instance_delete(?*WasiInstance) void;
-};
 
 test "run_tests" {
     testing.refAllDecls(@This());
