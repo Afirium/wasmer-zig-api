@@ -33,3 +33,46 @@ zig build test
 ```bash
 zig build run -Dexamples=true
 ```
+
+## Using it
+
+To use in your own projects, put this dependency into your `build.zig.zon`:
+
+```zig
+        .wasmer_zig_api = .{
+            .url = "https://github.com/Afirium/wasmer-zig-api/archive/refs/tags/v0.1.0.tar.gz",
+        }
+```
+
+Here is a complete `build.zig.zon` example:
+
+```zig
+.{
+    .name = "My example project",
+    .version = "0.0.1",
+
+    .dependencies = .{
+        .wasmer_zig_api = .{
+            .url = "https://github.com/Afirium/wasmer-zig-api/archive/refs/tags/v0.1.0.tar.gz",
+        },
+        .paths = .{
+            "",
+        },
+    }
+}
+
+```
+
+Then, in your `build.zig`'s `build` function, add the following before
+`b.installArtifact(exe)`:
+
+```zig 
+    const wasmerZigAPI= b.dependency("wasmer_zig_api", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    exe.root_module.addImport("wasmer", wasmerZigAPI.module("wasmer"));
+    exe.linkLibC();
+    exe.addLibraryPath(.{ .cwd_relative = "/home/path_to_your_wasmer/.wasmer/lib" });
+    exe.linkSystemLibrary("wasmer");
+```
