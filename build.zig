@@ -60,7 +60,11 @@ pub fn build(b: *std.Build) !void {
     });
 
     wasmer_unit_tests.linkLibC();
-    wasmer_unit_tests.addLibraryPath(.{ .cwd_relative = "/home/afirium/.wasmer/lib" });
+
+    const env_map = try std.process.getEnvMap(b.allocator);
+    const wasmer_dir_path = env_map.get("WASMER_DIR") orelse "";
+
+    wasmer_unit_tests.addLibraryPath(.{ .cwd_relative = wasmer_dir_path });
     wasmer_unit_tests.linkSystemLibrary("wasmer");
 
     const run_wasmer_unit_tests = b.addRunArtifact(wasmer_unit_tests);
