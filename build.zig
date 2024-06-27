@@ -13,6 +13,12 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
+    const wasmer_lib = b.addStaticLibrary(.{
+        .name = "wasmer",
+        .root_source_file = b.path("src/wasmer.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
 
     if (build_examples_option) {
         var examples_dir = try std.fs.cwd().openDir("examples", .{ .iterate = true });
@@ -74,4 +80,13 @@ pub fn build(b: *std.Build) !void {
     // running the unit tests.
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&run_wasmer_unit_tests.step);
+
+    // Build docs
+    const docs_step = b.step("docs", "Emit docs");
+    const docs = b.addInstallDirectory(.{
+        .source_dir = wasmer_lib.getEmittedDocs(),
+        .install_dir = .prefix,
+        .install_subdir = "docs",
+    });
+    docs_step.dependOn(&docs.step);
 }
