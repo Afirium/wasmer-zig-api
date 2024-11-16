@@ -45,7 +45,7 @@ pub fn build(b: *std.Build) !void {
                 });
 
                 example_exe.root_module.addImport("wasmer", wasmer_module);
-                example_exe.root_module.addLibraryPath(.{ .cwd_relative = "/home/afirium/.wasmer/lib" });
+                example_exe.root_module.addLibraryPath(.{ .cwd_relative = "$HOME/.wasmer/lib" });
                 example_exe.root_module.linkSystemLibrary("wasmer", .{});
 
                 b.installArtifact(example_exe);
