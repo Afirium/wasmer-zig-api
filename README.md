@@ -41,7 +41,7 @@ To use in your own projects, put this dependency into your `build.zig.zon`:
 ```zig
         .wasmer_zig_api = .{
             .url = "https://github.com/Afirium/wasmer-zig-api/archive/refs/tags/v0.1.0.tar.gz",
-			.hash = "122045bc571913d6657fc5671039aca6307d5c636ace43cbdf16897d649b0ba81897",
+            .hash = "122045bc571913d6657fc5671039aca6307d5c636ace43cbdf16897d649b0ba81897",
         }
 ```
 
@@ -55,7 +55,7 @@ Here is a complete `build.zig.zon` example:
     .dependencies = .{
         .wasmer_zig_api = .{
             .url = "https://github.com/Afirium/wasmer-zig-api/archive/refs/tags/v0.1.0.tar.gz",
-			.hash = "122045bc571913d6657fc5671039aca6307d5c636ace43cbdf16897d649b0ba81897",
+            .hash = "122045bc571913d6657fc5671039aca6307d5c636ace43cbdf16897d649b0ba81897",
         },
         .paths = .{
             "",
