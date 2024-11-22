@@ -3,6 +3,8 @@ const std = @import("std");
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const wasmer_dir_path = try std.process.getEnvVarOwned(b.allocator, "WASMER_DIR");
+    const wasmer_lib_dir_path = b.pathJoin(&.{ wasmer_dir_path, "lib" });
 
     const build_examples_option = b.option(bool, "examples", "Build example files") orelse false;
 
@@ -45,7 +47,7 @@ pub fn build(b: *std.Build) !void {
                 });
 
                 example_exe.root_module.addImport("wasmer", wasmer_module);
-                example_exe.root_module.addLibraryPath(.{ .cwd_relative = "$HOME/.wasmer/lib" });
+                example_exe.root_module.addLibraryPath(.{ .cwd_relative = wasmer_lib_dir_path });
                 example_exe.root_module.linkSystemLibrary("wasmer", .{});
 
                 b.installArtifact(example_exe);
@@ -66,11 +68,7 @@ pub fn build(b: *std.Build) !void {
     });
 
     wasmer_unit_tests.linkLibC();
-
-    const env_map = try std.process.getEnvMap(b.allocator);
-    const wasmer_dir_path = env_map.get("WASMER_DIR") orelse "";
-
-    wasmer_unit_tests.addLibraryPath(.{ .cwd_relative = wasmer_dir_path });
+    wasmer_unit_tests.addLibraryPath(.{ .cwd_relative = wasmer_lib_dir_path });
     wasmer_unit_tests.linkSystemLibrary("wasmer");
 
     const run_wasmer_unit_tests = b.addRunArtifact(wasmer_unit_tests);
