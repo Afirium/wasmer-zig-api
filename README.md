@@ -8,7 +8,7 @@ All WASI APIs are also implemented.
 
 All tests from the "wasmer" lib C repository are also reimplemented on zig. You can learn more about the API of this module through rich examples.
 
-The current module works with Zig 0.12.0+.
+The current module works with Zig 0.14.0+.
 
 ## Wasmer C API test examples [WIP]
 
@@ -23,7 +23,9 @@ The current module works with Zig 0.12.0+.
 - [x] wasi.c
 
 ## Running tests and examples
- 
+
+The `WASMER_DIR` environment variable is used to determine the presence and location of the Wasmer library. Ensure this variable is set correctly to avoid issues with library detection.
+
 - Run library unit tests:
 ```bash
 zig build test
@@ -36,33 +38,10 @@ zig build run -Dexamples=true
 
 ## Using it
 
-To use in your own projects, put this dependency into your `build.zig.zon`:
+In your zig project folder (where build.zig is located), run:
 
-```zig
-        .wasmer_zig_api = .{
-            .url = "https://github.com/Afirium/wasmer-zig-api/archive/refs/tags/v0.1.0.tar.gz",
-            .hash = "122045bc571913d6657fc5671039aca6307d5c636ace43cbdf16897d649b0ba81897",
-        }
-```
-
-Here is a complete `build.zig.zon` example:
-
-```zig
-.{
-    .name = "My example project",
-    .version = "0.0.1",
-
-    .dependencies = .{
-        .wasmer_zig_api = .{
-            .url = "https://github.com/Afirium/wasmer-zig-api/archive/refs/tags/v0.1.0.tar.gz",
-            .hash = "122045bc571913d6657fc5671039aca6307d5c636ace43cbdf16897d649b0ba81897",
-        },
-        .paths = .{
-            "",
-        },
-    }
-}
-
+```bash
+zig fetch --save "git+https://github.com/Afirium/wasmer-zig-api#v0.2.0"
 ```
 
 Then, in your `build.zig`'s `build` function, add the following before
