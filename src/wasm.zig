@@ -126,8 +126,8 @@ pub const Func = opaque {
     pub fn init(store: *Store, callback: anytype) !*Func {
         const cb_meta = @typeInfo(@TypeOf(callback));
         switch (cb_meta) {
-            .Fn => {
-                if (cb_meta.Fn.params.len > 0 or cb_meta.Fn.return_type.? != void) {
+            .@"fn" => {
+                if (cb_meta.@"fn".params.len > 0 or cb_meta.@"fn".return_type.? != void) {
                     @compileError("only callbacks with no input args and no results are currently supported");
                 }
             },
@@ -174,7 +174,7 @@ pub const Func = opaque {
     // pub fn call(self: *Func, comptime ResultType: type, args: anytype) CallError!ResultType {
     //     // if (!comptime trait.isTuple(@TypeOf(args)))
     //     // TODO: remove it
-    //     if (!comptime @typeInfo(@TypeOf(args)).Struct.is_tuple)
+    //     if (!comptime @typeInfo(@TypeOf(args)).@"struct".is_tuple)
     //         @compileError("Expected 'args' to be a tuple, but found type '" ++ @typeName(@TypeOf(args)) ++ "'");
 
     //     const args_len = args.len;
@@ -231,7 +231,7 @@ pub const Func = opaque {
     // }
 
     pub fn call(self: *Func, comptime ResultType: type, args: anytype) CallError!ResultType {
-        if (!comptime @typeInfo(@TypeOf(args)).Struct.is_tuple)
+        if (!comptime @typeInfo(@TypeOf(args)).@"struct".is_tuple)
             @compileError("Expected 'args' to be a tuple, but found type '" ++ @typeName(@TypeOf(args)) ++ "'");
 
         const args_len = args.len;
